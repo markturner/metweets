@@ -13,31 +13,34 @@ Twitter.configure do |config|
   config.oauth_token_secret = 'joH5WooRUTZJoUJ2QZTbtC5hPC7JWoBMAcsWY2Z8A'
 end
 
+Twitter.user
+
 get '/' do
   content_type 'application/json', :charset => 'utf-8'
   headers['Cache-Control'] = 'public, max-age=21600' # Cache for six hours
   
+  client = Twitter::Client.new
+
   array = []
-    
-  Twitter.retweets_of_me.each do |retweet|
-    # tid = retweet.id
-    # users = []
-    retweet
-    # Twitter.retweeters_of(tid, :ids_only => true).each do |user|
-    #   # uid = user.id
-    #   # users << uid
-    #   user.inspect
-    # end
+  
+  client.retweets_of_me(:count => 10).each do |retweet|
+    users = []
+    client.retweeters_of(retweet.id).each do |user|
+      users << {
+        :id => user.id,
+        :username => user.screen_name
+      }
+    end
     
     # push items to array
-    # array << {
-    #   :tweet => tid,
-    #   :retweeters => users
-    # }
+    array << {
+      :id => retweet.id,
+      :text => retweet.text,
+      :retweeters => users
+    }
   end
   
-  
-  # # return first 5 items of array as json object
-  # array.to_json
+  # return first 5 items of array as json object
+  array.to_json
 
 end
